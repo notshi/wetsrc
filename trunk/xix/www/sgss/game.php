@@ -166,7 +166,7 @@ foreach($tags as $k=>$v)
 	{
 		if($s!="") {$s.=" , "; }
 		
-		$s.="<a href=\"../index.php?tag=".$t."\" target=\"_TOP\">".$t."</a>";
+		$s.="<a href=\"../games.php?tag=".$t."\" target=\"_TOP\">".$t."</a>";
 	}
 }
 
@@ -174,7 +174,7 @@ echo "<h1>".$dat["title"]."</h1><br/>";
 echo $dat["desc"] . "<br/><br/>";
 echo $s . "<br/>";
 
-echo "<a href=\"../index.php\" target=\"_TOP\"><h1>Back to list of all games.</h1></a><br/><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original site code from www.wetgenes.com</a></small>";
+echo "<a href=\"../games.php\" target=\"_TOP\"><h1>Back to list of all games.</h1></a><br/><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original site code from www.wetgenes.com</a></small>";
 
 $text='
 </center>
