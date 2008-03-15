@@ -61,8 +61,8 @@ $text='
 
 echo("<center><h1>".$tag." games . simple game site script </h1><div style=\"width:640px\">");
 
-	echo( "<a href=\"index.php?tag="."all"."\" style=\"color:#ffffff\">"."all"."</a> ");
-	echo( "<a href=\"index.php?tag="."new"."\" style=\"color:#ffffff\">"."new"."</a> ");
+	echo( "<a href=\"games.php?tag="."all"."\" style=\"color:#ffffff\">"."all"."</a> ");
+	echo( "<a href=\"games.php?tag="."new"."\" style=\"color:#ffffff\">"."new"."</a> ");
 for($i=0 ; $tagsdata[$i] ; $i+=2 )
 {
 	$tc=floor($tagsdata[$i+1]);
@@ -74,7 +74,7 @@ for($i=0 ; $tagsdata[$i] ; $i+=2 )
 		if($cb>255){$cb=255;}
 		$cb=sprintf("%02x%02x%02x",$cb,$cb,$cb);
 		
-		echo( "<a href=\"index.php?tag=".$tagsdata[$i]."\" style=\"color:#".$cb."\">".$tagsdata[$i]."</a> ");
+		echo( "<a href=\"games.php?tag=".$tagsdata[$i]."\" style=\"color:#".$cb."\">".$tagsdata[$i]."</a> ");
 	}
 }
 
