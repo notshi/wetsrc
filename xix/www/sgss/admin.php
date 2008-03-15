@@ -1,21 +1,8 @@
 <?php
 
-/*+-----------------------------------------------------------------------------------------------------------------+*/
-//
-// (C) Kriss Daniels 2008 http://www.XIXs.com
-//
-// This file made available under the terms of The MIT License : http://www.opensource.org/licenses/mit-license.php
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-/*+-----------------------------------------------------------------------------------------------------------------+*/
-
 
 // simple security
+/*
 if ( ( $_SERVER["PHP_AUTH_USER"] != 'admin' ) || ( $_SERVER["PHP_AUTH_PW"] != "secret" ) ) {
 
 header( 'WWW-Authenticate: Basic realm="Private"' );
@@ -24,16 +11,23 @@ echo 'Authorization Required.';
 exit;
 
 }
+*/
 
 
-if(!file_exists("games"))
-{
-	mkdir("games"); // we need a subfolder to store stuff in...
-}
+
+header('Content-type: text/html; charset=utf-8');
+
+
+
+// we need subfolders to store stuff in...
+if(!file_exists("games")) {	mkdir("games"); }
+if(!file_exists("data")) {	mkdir("data");  }
+if(!file_exists("data/tags")) {	mkdir("data/tags"); }
+
+
 
 
 //$file = "games.xml";
-
 $file="http://www.mochiads.com/feeds/games";
 
 
@@ -82,6 +76,7 @@ $dat["dep"]=array();
 $dat["depn"]=0;
 $dat["cnt"]=0;
 $dat["gd"]=array();
+$dat["tags"]=array();
 
 
 function startElement($parser, $name, $attrs) 
@@ -95,6 +90,7 @@ global $dat;
 		$dat["ent"]=array();
 		$dat["ent"]["s"]="";
 		$dat["ent"]["title"]="";
+		$dat["ent"]["cat"]="";
 	}
 	else
 	{
@@ -111,6 +107,11 @@ global $dat;
 		if($name=="IMG")
 		{
 			$dat["ent"]["img"]=$attrs["SRC"];
+		}
+		
+		if($name=="CATEGORY")
+		{
+			$dat["ent"]["cat"].=" ".$attrs["TERM"];
 		}
 	}
 }
@@ -136,6 +137,7 @@ global $dat;
 		$dat["gd"][$dat["cnt"]]=array();
 		$dat["gd"][$dat["cnt"]]["title"]=$dat["ent"]["title"];
 		$dat["gd"][$dat["cnt"]]["img"]=$dat["ent"]["img"];
+		$dat["gd"][$dat["cnt"]]["cat"]=$dat["ent"]["cat"];
 		
 		$dat["cnt"]++;
 	}
@@ -147,7 +149,8 @@ global $dat;
 	}
 	
 	
-}
+}   
+   
 
 function characterData($parser, $data) 
 {
@@ -182,7 +185,120 @@ xml_parser_free($xml_parser);
 
 
 
-$fp=fopen("gamesdata.php","w");
+
+$tags=array();
+foreach($dat["gd"] as $k=>$v)
+{
+	$aa=explode(" ",$v["cat"]);
+	foreach($aa as $aak=>$aav)
+	{
+		if(($aav)&&($aav!="")) // check we have a tag
+		{
+			$tag=strtolower(sanitize_title($aav));
+			
+			if(!$tags[$tag]) { $tags[$tag]=array(); }
+			
+			$doinsert=true;
+			foreach($tags[$tag] as $tk=>$tv)
+			{
+				if($tv==$k) {$doinsert=false;} // already tagged?
+			}
+			if($doinsert)
+			{
+				array_push($tags[$tag],$k); // remember idx as tagname
+			}
+		}
+	}
+}
+
+
+
+$tags_order=array();
+foreach($tags as $k=>$v)
+{
+	if(count($v)>=1) // minimum number of games using this tag before we care about it
+	{
+		array_push($tags_order,$k);
+	}
+}
+
+function tagcmp($a, $b)
+{
+global $tags;
+
+	$ac=count($tags[$a]);
+	$bc=count($tags[$b]);
+    if ($ac == $bc) { return 0; }
+    return ( $ac > $bc ) ? -1 : 1;
+}
+
+//usort($tags_order, "tagcmp");
+// alpha order
+sort($tags_order);
+
+
+foreach($tags_order as $k=>$v)
+{
+	$t=$tags[$v];
+	echo " ".$v." ";
+}
+
+
+
+
+
+
+
+$fp=fopen("data/tags.php","w");
+
+fwrite($fp,
+"<?php>
+
+\$tagsdata=array(
+");
+
+foreach($tags_order as $k=>$v)
+{
+	$t=$tags[$v];
+	fwrite($fp, '"'.$v.'",'.count($t).",\n");
+}
+
+fwrite($fp,
+"'');
+");
+
+fclose($fp);
+
+
+
+foreach($tags_order as $k=>$v)
+{
+	$t=$tags[$v];
+	$fp=fopen("data/tags/".$v.".php","w");
+
+fwrite($fp,
+"<?php>
+
+\$gamesdata=array(
+");
+
+	foreach($t as $tk=>$tv)
+	{
+		fwrite($fp, '"'.$dat["gd"][$tv]["title"].'","'.$dat["gd"][$tv]["img"]."\",\n");
+	}
+
+fwrite($fp,
+"'');
+");
+
+	fclose($fp);
+
+}
+
+
+// save all games, under tag all
+
+$fp=fopen("data/tags/all.php","w");
 
 fwrite($fp,
 "<?php>
@@ -193,6 +309,33 @@ fwrite($fp,
 foreach($dat["gd"] as $k=>$v)
 {
 fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\n");
+}
+
+fwrite($fp,
+"'');
+");
+
+fclose($fp);
+
+
+
+// save new games under tag new
+
+$fp=fopen("data/tags/new.php","w");
+
+fwrite($fp,
+"<?php>
+
+\$gamesdata=array(
+");
+
+$i=0;
+foreach($dat["gd"] as $k=>$v)
+{
+fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\n");
+
+$i++;
+if($i>39) break;
 }
 
 fwrite($fp,
