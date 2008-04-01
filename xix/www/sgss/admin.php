@@ -196,16 +196,19 @@ foreach($dat["gd"] as $k=>$v)
 		{
 			$tag=strtolower(sanitize_title($aav));
 			
-			if(!$tags[$tag]) { $tags[$tag]=array(); }
-			
-			$doinsert=true;
-			foreach($tags[$tag] as $tk=>$tv)
+			if($tag!="")
 			{
-				if($tv==$k) {$doinsert=false;} // already tagged?
-			}
-			if($doinsert)
-			{
-				array_push($tags[$tag],$k); // remember idx as tagname
+				if(!$tags[$tag]) { $tags[$tag]=array(); }
+				
+				$doinsert=true;
+				foreach($tags[$tag] as $tk=>$tv)
+				{
+					if($tv==$k) {$doinsert=false;} // already tagged?
+				}
+				if($doinsert)
+				{
+					array_push($tags[$tag],$k); // remember idx as tagname
+				}
 			}
 		}
 	}
