@@ -221,7 +221,7 @@ usort($dat["gd"],gdcmp);
 $tags=array();
 foreach($dat["gd"] as $k=>$v)
 {
-	$aa=explode(" ",$v["cat"]);
+	$aa=explode(",",$v["cat"]);
 	foreach($aa as $aak=>$aav)
 	{
 		if(($aav)&&($aav!="")) // check we have a tag

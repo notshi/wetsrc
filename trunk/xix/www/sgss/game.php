@@ -154,7 +154,7 @@ $text='
 	echo $text;
 
 	
-$tags=explode(" ",$dat["tags"]);
+$tags=explode(",",$dat["tags"]);
 $s="";
 foreach($tags as $k=>$v)
 {
