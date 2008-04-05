@@ -1,6 +1,5 @@
 <?php
 
-
 // simple security
 /*
 if ( ( $_SERVER["PHP_AUTH_USER"] != 'admin' ) || ( $_SERVER["PHP_AUTH_PW"] != "secret" ) ) {
@@ -12,11 +11,6 @@ exit;
 
 }
 */
-
-
-
-header('Content-type: text/html; charset=utf-8');
-
 
 
 // we need subfolders to store stuff in...
@@ -37,7 +31,10 @@ $xmlhead="<?php\n\n\$xmlstr=<<<ENDOFSTRING\n
 
 $xmltail="\n</data>\nENDOFSTRING;\n
 
+if(!\$done_game_php)
+{
 require \"../game.php\";
+}
 ";
 
 
@@ -68,7 +65,15 @@ function sanitize_title($s)
 	return ($s);
 }
 
-
+function desc_to_note($s)
+{
+	$s=htmlspecialchars($s);
+	if(strlen($s)>256)
+	{
+		$s=substr($s,0,256)."...";
+	}
+	return $s;
+}
 
 $dat=array();
 $dat["ent"]=null;
@@ -91,6 +96,8 @@ global $dat;
 		$dat["ent"]["s"]="";
 		$dat["ent"]["title"]="";
 		$dat["ent"]["cat"]="";
+		$dat["ent"]["desc"]="";
+		$dat["ent"]["date"]="";
 	}
 	else
 	{
@@ -109,10 +116,10 @@ global $dat;
 			$dat["ent"]["img"]=$attrs["SRC"];
 		}
 		
-		if($name=="CATEGORY")
-		{
-			$dat["ent"]["cat"].=" ".$attrs["TERM"];
-		}
+//		if($name=="CATEGORY")
+//		{
+//			$dat["ent"]["cat"].=" ".$attrs["TERM"];
+//		}
 	}
 }
 
@@ -126,18 +133,18 @@ global $dat;
 		
 		$dat["ent"]["title"]=sanitize_title($dat["ent"]["title"]);
 		
-		$fp=fopen("games/".$dat["ent"]["title"].".php","w");
-		fwrite($fp,$GLOBALS["xmlhead"]);
-		fwrite($fp,$dat["ent"]["s"]);
-		fwrite($fp,$GLOBALS["xmltail"]);
-		fclose($fp);
-		echo " ".$dat["cnt"]." : ".$dat["ent"]["title"]."<br/>";
-		flush();
-		
 		$dat["gd"][$dat["cnt"]]=array();
 		$dat["gd"][$dat["cnt"]]["title"]=$dat["ent"]["title"];
+		$dat["gd"][$dat["cnt"]]["date"]=strtotime($dat["ent"]["date"]);
 		$dat["gd"][$dat["cnt"]]["img"]=$dat["ent"]["img"];
 		$dat["gd"][$dat["cnt"]]["cat"]=$dat["ent"]["cat"];
+		$dat["gd"][$dat["cnt"]]["xml"]=$dat["ent"]["s"];
+		$dat["gd"][$dat["cnt"]]["desc"]=$dat["ent"]["desc"];
+		$dat["gd"][$dat["cnt"]]["note"]=desc_to_note($dat["ent"]["desc"]);
+
+		echo " ".$dat["cnt"]." : ".date("Y-m-d",$dat["gd"][$dat["cnt"]]["date"])." : ".$dat["ent"]["title"]."<br/>";
+		flush();
+		
 		
 		$dat["cnt"]++;
 	}
@@ -162,6 +169,21 @@ global $dat;
 	{
 		$dat["ent"]["title"].=$data;
 	}
+	else
+	if($dat["dep"][$dat["depn"]]=="MEDIA:DESCRIPTION")
+	{
+		$dat["ent"]["desc"].=$data;
+	}
+	else
+	if($dat["dep"][$dat["depn"]]=="MEDIA:KEYWORDS")
+	{
+		$dat["ent"]["cat"].=$data;
+	}
+	else
+	if($dat["dep"][$dat["depn"]]=="UPDATED")
+	{
+		$dat["ent"]["date"].=$data;
+	}
 }
 
 $xml_parser = xml_parser_create();
@@ -184,6 +206,16 @@ while ($data = fread($fp, 4096)) {
 xml_parser_free($xml_parser);
 
 
+// sort games by time updated not time published so new stuff always gets bumped
+function gdcmp($a, $b)
+{
+global $tags;
+
+    if ($a["date"] == $b["date"]) { return 0; }
+    return ( $a["date"] > $b["date"] ) ? -1 : 1;
+}
+usort($dat["gd"],gdcmp);
+
 
 
 $tags=array();
@@ -198,8 +230,12 @@ foreach($dat["gd"] as $k=>$v)
 			
 			if($tag!="")
 			{
-				if(!$tags[$tag]) { $tags[$tag]=array(); }
+			
+				if($tag=="dressup") { $dat["gd"][$k]["dressup"]=true; } // evil dressup
+				if($tag=="customize") { $dat["gd"][$k]["dressup"]=true; } // evil dressup
 				
+				if(!$tags[$tag]) { $tags[$tag]=array(); }
+								
 				$doinsert=true;
 				foreach($tags[$tag] as $tk=>$tv)
 				{
@@ -209,6 +245,7 @@ foreach($dat["gd"] as $k=>$v)
 				{
 					array_push($tags[$tag],$k); // remember idx as tagname
 				}
+				
 			}
 		}
 	}
@@ -287,7 +324,7 @@ fwrite($fp,
 
 	foreach($t as $tk=>$tv)
 	{
-		fwrite($fp, '"'.$dat["gd"][$tv]["title"].'","'.$dat["gd"][$tv]["img"]."\",\n");
+		fwrite($fp, '"'.$dat["gd"][$tv]["title"].'","'.$dat["gd"][$tv]["img"]."\",\"".$dat["gd"][$tv]["note"]."\",\n");
 	}
 
 fwrite($fp,
@@ -311,7 +348,7 @@ fwrite($fp,
 
 foreach($dat["gd"] as $k=>$v)
 {
-fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\n");
+fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\"".$v["note"]."\",\n");
 }
 
 fwrite($fp,
@@ -322,7 +359,7 @@ fclose($fp);
 
 
 
-// save new games under tag new
+// save new (as in newly updated) games under tag new
 
 $fp=fopen("data/tags/new.php","w");
 
@@ -335,10 +372,14 @@ fwrite($fp,
 $i=0;
 foreach($dat["gd"] as $k=>$v)
 {
-fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\n");
 
-$i++;
-if($i>39) break;
+//	if(!$v["dressup"]) // filter out dressup on front page if you wish
+	{
+		fwrite($fp, '"'.$v["title"].'","'.$v["img"]."\",\"".$v["note"]."\",\n");
+
+		$i++;
+		if($i>80) break;
+	}
 }
 
 fwrite($fp,
@@ -347,4 +388,17 @@ fwrite($fp,
 
 fclose($fp);
 
+
+// save all the cached xml of the games to special php files
+
+foreach($dat["gd"] as $k=>$v)
+{
+		$fp=fopen("games/".$v["title"].".php","w");
+		fwrite($fp,$GLOBALS["xmlhead"]);
+		fwrite($fp,$v["xml"]);
+		fwrite($fp,"\n<like id=\"".$v["id"]."\" />\n");
+		fwrite($fp,$GLOBALS["xmltail"]);
+		fclose($fp);
+}
+		
 

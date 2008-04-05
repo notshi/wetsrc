@@ -40,10 +40,6 @@ $anal_str=<<<ENDOFSTRING
 ENDOFSTRING;
 
 
-header('Content-type: text/html; charset=utf-8');
-
-
-
 function startElement($parser, $name, $attrs) 
 {
 global $dat;
@@ -61,9 +57,9 @@ global $dat;
 			$dat["yp"]=floor($attrs["HEIGHT"]);
 		break;
 		
-		case "CATEGORY";
-			$dat["tags"].=" ".$attrs["TERM"];
-		break;
+//		case "CATEGORY";
+//			$dat["tags"].=" ".$attrs["TERM"];
+//		break;
 	}
 	
 	$dat["text"]="";
@@ -102,7 +98,9 @@ global $dat;
 	
 	switch($dat["dep"][ $dat["depn"] ])
 	{
-		
+		case "MEDIA:KEYWORDS":
+			$dat["tags"].=$data;
+		break;		
 	}
 }
 
@@ -132,7 +130,9 @@ $text='
 <link rel="stylesheet" type="text/css" href="../games.css"></link>
 <script type="text/javascript" src="../swfobject.js"></script>
 </head>
-<body class="zero"><center><div style="width:'.$dat["xp"].'px;">
+<body class="zero">
+<a href="../games.php" target="_TOP">Back to list<br /> of new games.<br /></a>
+<center><div style="width:'.$dat["xp"].'px;">
 ';
 
 	echo $text;
@@ -140,8 +140,6 @@ $text='
 
 $text='
 <center>
-<br />
-<br />
 <div class="zero" id="flashgame">
 </div>
 
@@ -174,7 +172,7 @@ echo "<h1>".$dat["title"]."</h1><br/>";
 echo $dat["desc"] . "<br/><br/>";
 echo $s . "<br/>";
 
-echo "<a href=\"../games.php\" target=\"_TOP\"><h1>Back to list of all games.</h1></a><br/><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original site code from www.wetgenes.com</a></small>";
+echo "<a href=\"../games.php\" target=\"_TOP\"><h1>Back to list of new games.</h1></a><br/><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original SGSS code from www.wetgenes.com</a></small>";
 
 $text='
 </center>
