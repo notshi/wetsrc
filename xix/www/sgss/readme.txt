@@ -1,6 +1,10 @@
 SIMPLE GAMES SITE SCRIPT
 ------------------------
 
+UPDATE:20080405
+	Mochi changed the feed slightly, this fixes that and adds boxover support.
+	
+
 
 Required
 --------
@@ -26,6 +30,8 @@ games.css you like css right?
 
 swfobject.js The wonderful swfobject code -> http://blog.deconcept.com/swfobject/
 
+boxover.js The wonderful boxover code -> http://boxover.swazz.org/
+
 admin.php sets everything up, you should run it occasionally to get new games. ( crontab is your friend )
 
 There is a simple comented out password check at the top of the file if you want to enable it.
@@ -38,7 +44,7 @@ this will create a games and a data subdirectory and read the mochi games feed f
 
 this may take some time
 
-wait for it to finish , there will be  splurge of all the tas used by the games at the end
+wait for it to finish , there will be  splurge of all the tags used by the games at the end
 
 you may now visit games.php on your site and play any games you see
 

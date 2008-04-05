@@ -3,6 +3,9 @@
 require "data/tags.php";
 
 
+// minimum number of times a tag must be used before it will show up in the tag cloud.
+$tagminuse=8;
+
 function sanitize_title($s)
 {
 	$list = '';
@@ -39,34 +42,34 @@ $tag=sanitize_title($tag);
 if(!file_exists("data/tags/$tag.php")) { $tag="new"; }
 
 
-require "data/tags/$tag.php";
-
-header('Content-type: text/html; charset=utf-8');
-
 
 $anal_str=<<<ENDOFSTRING
 ENDOFSTRING;
 
 $text='
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en"><head><title>'.$tag.' games . simple games site script</title>
+<html lang="en"><head><title>'.$tag.' games at simple games site script </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" type="text/css" href="games.css"></link>
+<script type="text/javascript" src="boxover.js"></script>
 </head>
-<body class="zero"><center><div>
+<body class="zero">
+<center><div class="games">
 ';
 
 	echo $text;
 
+if($tag=="all") { $tagminuse=2; }
 
-echo("<center><h1>".$tag." games . simple game site script </h1><div style=\"width:640px\">");
+
+echo("<center><br /><div class=\"tagbox\"><h1> ".$tag." games at Simple Games Site Script</h1><br />");
 
 	echo( "<a href=\"games.php?tag="."all"."\" style=\"color:#ffffff\">"."all"."</a> ");
 	echo( "<a href=\"games.php?tag="."new"."\" style=\"color:#ffffff\">"."new"."</a> ");
 for($i=0 ; $tagsdata[$i] ; $i+=2 )
 {
 	$tc=floor($tagsdata[$i+1]);
-	if($tc>7) // number of games to have tag before we show it
+	if($tc>=$tagminuse) // number of games to have tag before we show it
 	{
 		$cb=floor(log($tagsdata[$i+1],2)*2);
 		$cb=floor($cb*(255)/16);
@@ -78,16 +81,33 @@ for($i=0 ; $tagsdata[$i] ; $i+=2 )
 	}
 }
 
-echo("</div><br /><br /><div style=\"width:800px\">");
+echo("</div><br /><br /><div style=\"width:724px\">");
 
-for($i=0 ; $gamesdata[$i] ; $i+=2 )
+
+// if you want to pimp your games, tag them all with your name, for example wetgenes and use some code like this
+// to always insert your games at the head of the main new page
+/*
+if($tag=="new") // add my games at top of front page...
+{
+	require "data/tags/wetgenes.php";
+	for($i=0 ; $gamesdata[$i] ; $i+=3 )
+	{
+		$title=str_replace("_"," ",$gamesdata[$i]);
+		$titleurl=str_replace("_","+",$gamesdata[$i]);
+		echo( "<a href=\"games/".$gamesdata[$i].".php\" title=\"header=[".$title."] body=[".$gamesdata[$i+2]."]\"><img width=\"100\" height=\"100\" src=\"".$gamesdata[$i+1]."\" /></a>\n");
+	}
+}
+*/
+
+require "data/tags/$tag.php";
+for($i=0 ; $gamesdata[$i] ; $i+=3 )
 {
 	$title=str_replace("_"," ",$gamesdata[$i]);
 	$titleurl=str_replace("_","+",$gamesdata[$i]);
-	echo( "<a href=\"games/".$gamesdata[$i].".php\" title=\"".$title."\"><img width=\"100\" height=\"100\" src=\"".$gamesdata[$i+1]."\" /></a>\n");
+	echo( "<a href=\"games/".$gamesdata[$i].".php\" title=\"header=[".$title."] body=[".$gamesdata[$i+2]."]\"><img width=\"100\" height=\"100\" src=\"".$gamesdata[$i+1]."\" /></a>\n");
 }
 
-echo("</div><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original site code from www.wetgenes.com</a></small></center>");
+echo("</div><br /><br /><small><a href=\"http://www.WetGenes.com/\">Original SGSS code from www.wetgenes.com</a></small></center>");
 
 
 $text='
