@@ -2,7 +2,7 @@ My intent with this code is to give an easy way for authors with a game site con
 
 This script runs off of the mochiads games feed and manages a simple site containing all the games.
 
-See RecentGames for how this code can also be used to display a recent games widget in other parts of your site.
+See [Recent Games](#recent-games) for how this code can also be used to display a recent games widget in other parts of your site.
 
 Some examples of this script in use
 
@@ -25,6 +25,24 @@ The files, that are distributed with this file that you are reading.
 
 ##Aditional
 The ability to edit these simple php scripts into something that you like , you will need to do that, a nicer layout etc is your problem :)
+
+
+#Recent Games
+How to setup a Recent Games Widget using SGSS
+
+*NOTE : There is extra data as of 20080405 code update, so what was $i+=2 is now $i+=3*
+
+Just put the SGSS scripts in a sub folder, in this example it is assumed to be "sgss", make sure you've run admin.php at least once then use some php code like the following on the page you want the recent games links to be in.
+
+```
+require "sgss/data/tags/new.php";
+for($i=0 ; $i<15; $i+=3 )
+{
+echo( "<a href=\"sgss/games/".$gamesdata[$i].".php\" title=\"".$gamesdata[$i]."\"><img width=\"100\" height=\"100\" src=\"".$gamesdata[$i+1]."\" /></a>\n");
+}
+```
+
+Untested :) so may need slight fixes, but that should give you the most recent 5 games,.You will also need to make sure admin.php is run once a day by crontab or something for it to actually update.
 
 
 ##How?
