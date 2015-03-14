@@ -1,6 +1,8 @@
-This is no longer updated. Visit http://bitbucket.org/xixs instead.
+###This is no longer updated. Visit http://bitbucket.org/xixs instead.
 
-Imported from the now defunct, https://code.google.com/p/wetsrc/ (archived - https://archive.today/lR5UO)
+Imported from the now defunct, https://code.google.com/p/wetsrc/
+
+Archived - https://archive.today/lR5UO
 
 ![wetsrc screenshot](http://wet.genes.pw/data/wetsrc_screen/wetsrc_screen.png)
 
