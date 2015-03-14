@@ -16,7 +16,7 @@ After bake.bat has run wetplay/out will contain a compiled .swf and a .html test
 
 Here is a prebuilt .swf
 
-http://wetsrc.googlecode.com/svn/trunk/xix/swf/wetplay/fin/WetPlay.20080316.swf
+https://github.com/notshi/wetsrc/blob/master/xix/swf/wetplay/fin/WetPlay.20080316.swf
 
 Depending on your browser the above link may just work and open in your browser or prompt you to download, this is due to the missing Content-Type in the headers being sent from googlecode so there is nothing I can do about it...
 
